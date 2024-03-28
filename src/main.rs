@@ -3,9 +3,8 @@ use psutil::memory;
 use redactr::load_rule_configs;
 use regex::Regex;
 use serde::Serialize;
-use std::time::{SystemTime, UNIX_EPOCH};
 use actix_web_prom::PrometheusMetricsBuilder;
-
+use uptime_lib;
 
 // Health endpoint JSON
 #[derive(Serialize)]
@@ -16,23 +15,28 @@ struct HealthCheck {
 
 #[derive(Serialize)]
 struct HealthStatus {
-    uptime: u64,
+    uptime: f64,
     memory_usage: f32,
     disk_usage: u64,
     checks: Vec<HealthCheck>,
 }
 
 async fn health() -> impl Responder {
-    let mut checks = vec![];
+    // implement a file-based health check
+    // Return a 500 if a file exists
+    if std::path::Path::new("fail.txt").exists() {
+        return HttpResponse::InternalServerError().finish();
+    }
 
-    // Check container uptime
-    let uptime = SystemTime::now()
-        .duration_since(UNIX_EPOCH)
-        .unwrap()
-        .as_secs();
+    let mut checks = vec![];
+    let uptime = match uptime_lib::get() {
+        Ok(uptime) => uptime.as_secs_f64(),
+        Err(_err) => -1.0,
+    };
+
     checks.push(HealthCheck {
         name: "Container uptime".to_string(),
-        status: format!("{} seconds", uptime),
+        status: uptime.to_string(),
     });
 
     // Check memory usage

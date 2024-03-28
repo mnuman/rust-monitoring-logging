@@ -12,9 +12,10 @@ serde_json = "1.0"
 serde = { version = "1.0", features = ["derive"] }
 actix-web = "4.0"
 psutil = "3.2.2"
-actix-web-prom = "0.7.0"
+actix-web-prom = "0.8.0"
 tracing = "0.1.37"
-tracing-subscriber = "0.2.0"
+tracing-subscriber = "0.3.18"
+uptime_lib = "0.3.0"
 
 [dev-dependencies]
 pretty_assertions = "1.4.0"
